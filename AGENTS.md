@@ -17,7 +17,8 @@ token-tax/
 
 ## Build & Test Commands
 
-*TBD*
+- **Unit tests (Zero-Dependency):** `npm run test:unit` (or `node tests/run-tests.js`)
+- **E2E tests (Playwright):** `npm run test:e2e` (requires `npm install` and `npx playwright install chromium`)
 
 ## Code Style
 
@@ -45,6 +46,8 @@ token-tax/
 | File | Purpose |
 |------|---------|
 | `specs/implementation-plan.md` | Implementation plan - follow the steps and update this file after each step |
+| `tests/run-tests.js` | Native unit tests runner script (runs VM-mocked extension tests) |
+| `tests/e2e/extension.spec.js` | Playwright E2E browser tests |
 
 ## Notes
 

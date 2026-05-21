@@ -1,0 +1,15 @@
+{
+  "name": "token-tax",
+  "version": "1.0.0",
+  "description": "Chrome Extension to track AI token and message limits on Claude and Gemini",
+  "main": "src/background.js",
+  "scripts": {
+    "test:unit": "node tests/run-tests.js",
+    "test:e2e": "playwright test",
+    "test": "npm run test:unit"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0"
+  },
+  "type": "commonjs"
+}

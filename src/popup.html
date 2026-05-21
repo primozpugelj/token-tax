@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Token Tax Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0f1016;
+      --bg-card: rgba(22, 24, 37, 0.7);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --text-main: #f3f4f6;
+      --text-sub: #9ca3af;
+      --accent-claude: linear-gradient(135deg, #d97706, #b45309);
+      --accent-gemini: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      --success: #10b981;
+      --error: #ef4444;
+      --glow-claude: rgba(217, 119, 6, 0.15);
+      --glow-gemini: rgba(139, 92, 246, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      width: 340px;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Outfit', sans-serif;
+      padding: 16px;
+      overflow-hidden: hidden;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 18px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #f59e0b, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      font-size: 11px;
+      color: var(--text-sub);
+    }
+
+    .btn-sync {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-sync:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .btn-sync:active {
+      transform: translateY(0);
+    }
+
+    .sync-icon {
+      width: 12px;
+      height: 12px;
+      fill: currentColor;
+      transition: transform 0.6s ease;
+    }
+
+    .btn-sync:hover .sync-icon {
+      transform: rotate(180deg);
+    }
+
+    .card-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(8px);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+    }
+
+    .card-claude::before {
+      background: var(--accent-claude);
+    }
+
+    .card-gemini::before {
+      background: var(--accent-gemini);
+    }
+
+    .card-claude:hover {
+      box-shadow: 0 8px 24px var(--glow-claude);
+      border-color: rgba(217, 119, 6, 0.3);
+    }
+
+    .card-gemini:hover {
+      box-shadow: 0 8px 24px var(--glow-gemini);
+      border-color: rgba(139, 92, 246, 0.3);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .platform-name {
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-badge {
+      font-size: 10px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: 20px;
+      text-transform: capitalize;
+    }
+
+    .status-success {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .status-error {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--error);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .status-syncing {
+      background: rgba(245, 158, 11, 0.1);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      animation: pulse 1.5s infinite alternate;
+    }
+
+    .metric-value {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .metric-unit {
+      font-size: 14px;
+      color: var(--text-sub);
+      font-weight: 400;
+    }
+
+    .progress-bar-container {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 3px;
+      margin: 12px 0;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      border-radius: 3px;
+      width: 0%;
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .card-claude .progress-bar {
+      background: var(--accent-claude);
+    }
+
+    .card-gemini .progress-bar {
+      background: var(--accent-gemini);
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-sub);
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .meta-time {
+      font-weight: 500;
+      color: var(--text-main);
+    }
+
+    .error-msg {
+      font-size: 11px;
+      color: var(--error);
+      margin-top: 8px;
+      display: none;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.6; }
+      100% { opacity: 1; }
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.25);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Token Tax</h1>
+      <div class="subtitle">AI Consumption scrapers</div>
+    </div>
+    <button class="btn-sync" id="syncBtn">
+      <svg class="sync-icon" viewBox="0 0 24 24">
+        <path d="M19 8l-4 4h3c0 3.31-2.69 6-6 6-1.01 0-1.97-.25-2.8-.7l-1.46 1.46C8.97 19.54 10.43 20 12 20c4.42 0 8-3.58 8-8h3l-4-4zM6 12c0-3.31 2.69-6 6-6 1.01 0 1.97.25 2.8.7l1.46-1.46C15.03 4.46 13.57 4 12 4c-4.42 0-8 3.58-8 8H1l4 4 4-4H6z"/>
+      </svg>
+      Sync Now
+    </button>
+  </header>
+
+  <div class="card-container">
+    <!-- Claude Card -->
+    <div class="card card-claude" id="card-claude">
+      <div class="card-header">
+        <div class="platform-name">
+          <span style="color: #f59e0b;">●</span> Claude.ai
+        </div>
+        <span class="status-badge status-syncing" id="claude-badge">syncing</span>
+      </div>
+      <div class="metric-value">
+        <span id="claude-remaining">-</span>
+        <span class="metric-unit">/ <span id="claude-limit">-</span> msgs</span>
+      </div>
+      <div class="progress-bar-container">
+        <div class="progress-bar" id="claude-progress"></div>
+      </div>
+      <div class="meta-row">
+        <div class="meta-item">Resets: <span class="meta-time" id="claude-reset">-</span></div>
+        <div class="meta-item">Updated: <span id="claude-updated">-</span></div>
+      </div>
+      <div class="error-msg" id="claude-error"></div>
+    </div>
+
+    <!-- Gemini Card -->
+    <div class="card card-gemini" id="card-gemini">
+      <div class="card-header">
+        <div class="platform-name">
+          <span style="color: #a855f7;">●</span> Gemini
+        </div>
+        <span class="status-badge status-syncing" id="gemini-badge">syncing</span>
+      </div>
+      <div class="metric-value">
+        <span id="gemini-remaining">-</span>
+        <span class="metric-unit">/ <span id="gemini-limit">-</span> queries</span>
+      </div>
+      <div class="progress-bar-container">
+        <div class="progress-bar" id="gemini-progress"></div>
+      </div>
+      <div class="meta-row">
+        <div class="meta-item">Resets: <span class="meta-time" id="gemini-reset">-</span></div>
+        <div class="meta-item">Updated: <span id="gemini-updated">-</span></div>
+      </div>
+      <div class="error-msg" id="gemini-error"></div>
+    </div>
+  </div>
+
+  <footer>Token Tax Scraper • Version 1.0.0</footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>

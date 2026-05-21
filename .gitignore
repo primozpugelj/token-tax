@@ -1,2 +1,6 @@
 .DS_Store
 Thumbs.db
+node_modules
+test_results
+.tmp_playwright_user_data
+.tmp_playwright_tmpdir
