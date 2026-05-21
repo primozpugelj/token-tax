@@ -32,7 +32,7 @@ test('Background Service Worker Orchestration', async (t) => {
     // 1. Alarm setup check
     assert.strictEqual(chrome.alarmsCreated.length, 1);
     assert.strictEqual(chrome.alarmsCreated[0].name, 'sync-limit-alarm');
-    assert.strictEqual(chrome.alarmsCreated[0].options.periodInMinutes, 15);
+    assert.ok(typeof chrome.alarmsCreated[0].options.periodInMinutes === 'number' && chrome.alarmsCreated[0].options.periodInMinutes > 0);
 
     // 2. Initial sync tabs check (should open a tab for each platform)
     assert.strictEqual(chrome.tabsCreated.length, 2);

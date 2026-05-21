@@ -12,11 +12,12 @@ test.describe('Token Tax Extension E2E', () => {
   test.beforeAll(async () => {
     const pathToExtension = path.join(__dirname, '../../src');
     
-    // Create a temporary user data directory within the workspace to isolate runs
+    // Create a fresh temporary user data directory within the workspace to isolate runs
     const userDataDir = path.join(__dirname, '../../.tmp_playwright_user_data');
-    if (!fs.existsSync(userDataDir)) {
-      fs.mkdirSync(userDataDir, { recursive: true });
+    if (fs.existsSync(userDataDir)) {
+      fs.rmSync(userDataDir, { recursive: true, force: true });
     }
+    fs.mkdirSync(userDataDir, { recursive: true });
 
     // Set TMPDIR to a local directory within the workspace to prevent sandbox socket binding errors
     const customTmpDir = path.join(__dirname, '../../.tmp_playwright_tmpdir');
@@ -30,8 +31,7 @@ test.describe('Token Tax Extension E2E', () => {
       headless: false, // Chrome extensions are only supported in headful Chromium (headless: false)
       args: [
         `--disable-extensions-except=${pathToExtension}`,
-        `--load-extension=${pathToExtension}`,
-        `--headless=new` // Modern headless mode allows extensions to work headlessly!
+        `--load-extension=${pathToExtension}`
       ],
       env: {
         ...process.env,
@@ -64,34 +64,45 @@ test.describe('Token Tax Extension E2E', () => {
     expect(extensionId.length).toBeGreaterThan(10);
   });
 
-  test('popup UI loads correctly and shows platform cards', async ({ page }) => {
-    // Navigate page directly to the popup HTML within the extension context
-    await page.goto(`chrome-extension://${extensionId}/popup.html`);
+  test('popup UI loads correctly and shows platform cards', async () => {
+    // Must create page from the extension's persistent context, not the default
+    // Playwright context — otherwise chrome-extension:// URLs are blocked
+    const page = await context.newPage();
+    try {
+      await page.goto(`chrome-extension://${extensionId}/popup.html`);
 
-    // Verify title and headers
-    await expect(page.locator('h1')).toHaveText('Token Tax');
-    
-    // Verify platform card visibility
-    await expect(page.locator('#card-claude')).toBeVisible();
-    await expect(page.locator('#card-gemini')).toBeVisible();
+      // Verify title and headers
+      await expect(page.locator('h1')).toHaveText('Token Tax');
+      
+      // Verify platform card visibility
+      await expect(page.locator('#card-claude')).toBeVisible();
+      await expect(page.locator('#card-gemini')).toBeVisible();
 
-    // Verify presence of limits labels
-    await expect(page.locator('#claude-remaining')).toBeVisible();
-    await expect(page.locator('#gemini-remaining')).toBeVisible();
+      // Verify presence of limits labels
+      await expect(page.locator('#claude-remaining')).toBeVisible();
+      await expect(page.locator('#gemini-remaining')).toBeVisible();
+    } finally {
+      await page.close();
+    }
   });
 
-  test('trigger sync click updates badge state to syncing', async ({ page }) => {
-    await page.goto(`chrome-extension://${extensionId}/popup.html`);
+  test('trigger sync click updates badge state to syncing', async () => {
+    const page = await context.newPage();
+    try {
+      await page.goto(`chrome-extension://${extensionId}/popup.html`);
 
-    // Initially badges should load status
-    const claudeBadge = page.locator('#claude-badge');
-    
-    // Click "Sync Now" button
-    const syncBtn = page.locator('#syncBtn');
-    await syncBtn.click();
+      // Initially badges should load status
+      const claudeBadge = page.locator('#claude-badge');
+      
+      // Click "Sync Now" button
+      const syncBtn = page.locator('#syncBtn');
+      await syncBtn.click();
 
-    // Assert it immediately changes status to syncing
-    await expect(claudeBadge).toHaveText('syncing');
-    await expect(claudeBadge).toHaveClass(/status-syncing/);
+      // Assert it immediately changes status to syncing
+      await expect(claudeBadge).toHaveText('syncing');
+      await expect(claudeBadge).toHaveClass(/status-syncing/);
+    } finally {
+      await page.close();
+    }
   });
 });

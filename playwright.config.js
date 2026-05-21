@@ -10,9 +10,7 @@ module.exports = defineConfig({
   workers: 1,
   reporter: 'list',
   use: {
-    // Chrome extensions can only be loaded in Chrome, which Playwright handles.
-    // Headless mode is supported in Playwright when passing appropriate flags,
-    // but running with headless: false is recommended for visual inspection if needed.
-    headless: true,
+    // Chrome extensions can only be loaded in Chrome with headful mode enabled.
+    headless: false,
   }
 });

@@ -17,13 +17,15 @@ token-tax/
 
 ## Build & Test Commands
 
-- **Unit tests (Zero-Dependency):** `npm run test:unit` (or `node tests/run-tests.js`)
-- **E2E tests (Playwright):** `npm run test:e2e` (requires `npm install` and `npx playwright install chromium`)
+- **Setup:** `make setup` (or `npm install` and `npx playwright install chromium`)
+- **Unit tests:** `make check` (or `npm run test:unit`)
+- **E2E tests:** `make check` (or `npm run test:e2e`)
+- **Clean:** `make clean`
 
 ## Code Style
 
 - Follow existing patterns in the codebase
-- Use [language] style guide (e.g. PEP 8 for Python, StandardJS for JS)
+- Use JS style guide
 - Keep functions small and focused
 - Write tests for new features
 
